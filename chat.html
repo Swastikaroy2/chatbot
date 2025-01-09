@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer Support Chatbot</title>
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif; /* Modern font */
+            background-color: #181818;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .chatbot-container {
+            background-color: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            width: 350px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chat-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .chat-header h2 {
+            color: #0099ff;
+            font-size: 1.2rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: #202020;
+        }
+
+        .messages {
+            list-style: none;
+            padding: 0;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            animation: messageAppear 0.3s ease-in-out; 
+        }
+
+        @keyframes messageAppear {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            background-color: #444;
+            text-align: right;
+            padding: 15px;
+            flex-direction: row-reverse;
+            animation: slideInRight 0.5s ease-in-out; 
+        }
+
+        .bot-message {
+            background-color: #0099ff; 
+            color: #fff;
+            padding: 15px;
+            animation: slideInLeft 0.5s ease-in-out; 
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .user-input-container {
+            display: flex;
+        }
+
+        .user-input {
+            flex-grow: 1;
+            height: 100%;
+            padding: 10px;
+            border: 1px solid #555;
+            border-radius: 5px;
+            margin-right: 5px;
+            background-color: #333;
+            color: #fff;
+            outline: none;
+            font-size: 1rem; 
+            animation: fadeIn 0.3s ease-in-out; 
+        }
+
+        .send-button {
+            background-color: #0077cc; 
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2); 
+            animation: pulse 1s infinite; 
+        }
+
+        @keyframes pulse {
+            50% {
+                transform: scale(1.05);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chatbot-container">
+        <div class="chat-header">
+            <h2> Email Support <br> BCAC002 </h2> 
+        </div>
+        <div class="chat-messages">
+            <ul class="messages"></ul>
+        </div>
+        <div class="user-input-container">
+            <input type="text" id="userInput" placeholder="Type your message...">
+            <button class="send-button">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const messagesList = document.querySelector('.messages');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.querySelector('.send-button');
+        class ChatMessage {
+            constructor(role, content) {
+                this.role = role; 
+                this.content = content;
+            }
+
+            createMessageElement() {
+                const messageElement = document.createElement('li');
+                messageElement.classList.add('message', `${this.role}-message`);
+                messageElement.textContent = this.content;
+                return messageElement;
+            }
+        }
+
+        function displayMessage(message) {
+            messagesList.appendChild(message.createMessageElement());
+            messagesList.scrollTop = messagesList.scrollHeight; 
+        }
+
+        function getBotResponse(userMessage) {
+            const lowerCaseMessage = userMessage.toLowerCase();
+
+
+        if (/(hello|hi|hey|good (morning|afternoon|evening))/i.test(lowerCaseMessage)) {
+            return getGreetingResponse();
+        }
+
+        // Check for Farewells
+        if (/(bye|goodbye|see you|later|exit)/i.test(lowerCaseMessage)) {
+            return getFarewellResponse();
+        }
+
+        // Email-Specific Issues
+        if (/can't send|not sending|sending failed/.test(lowerCaseMessage)) {
+            return "Check internet connection, email size limits, attachment issues, recipient address, or blocked senders. Try simplifying the email.";
+        }
+        if (/not receiving|not getting|missing emails/.test(lowerCaseMessage)) {
+            return "Check spam/junk folder, recipient address, email filters, server issues, or account settings.";
+        }
+        if (/account hacked/.test(lowerCaseMessage)) {
+            return "Change password immediately, review recent activity, enable 2FA, scan devices, and contact your email provider.";
+        }
+        if (/create account/.test(lowerCaseMessage)) {
+            return "Visit the email provider's website to create an account.";
+        }
+        if (/forgot password/.test(lowerCaseMessage)) {
+            return "Use the 'Forgot Password' link on the login page.";
+        }
+        if (/change password/.test(lowerCaseMessage)) {
+            return "Access your account settings to change your password.";
+        }
+        if (/update profile/.test(lowerCaseMessage)) {
+            return "Access your account settings to update your profile information.";
+        }
+        if (/account information/.test(lowerCaseMessage)) {
+            return "Log in to your account to view your account information.";
+        }
+
+        // Settings & Features
+        if (/settings/.test(lowerCaseMessage)) {
+            return "Specify settings: forwarding, filtering, vacation responder, or other settings.";
+        }
+        if (/signature/.test(lowerCaseMessage)) {
+            return "Creating or editing your email signature? I can provide guidance.";
+        }
+        if (/attachment/.test(lowerCaseMessage)) {
+            return "Attaching files, sending large attachments, or receiving attachments?";
+        }
+        if (/address/.test(lowerCaseMessage)) {
+            return "Creating a new email address or changing your existing one?";
+        }
+        if (/spam/.test(lowerCaseMessage)) {
+            return "Identifying or blocking spam emails? I can provide tips and guidance.";
+        }
+        if (/phishing/.test(lowerCaseMessage)) {
+            return "Be wary of suspicious senders, check sender address, don't click links, hover over links, be cautious of urgent requests.";
+        }
+        if (/security/.test(lowerCaseMessage)) {
+            return "Use strong passwords, enable 2FA, update software, be cautious of what you share, and avoid suspicious emails.";
+        }
+        if (/client/.test(lowerCaseMessage)) {
+            return "Specify your email client (e.g., Outlook, Gmail, Apple Mail) for more specific assistance.";
+        }
+
+        // General Inquiries
+        if (/contact us/.test(lowerCaseMessage)) {
+            return "You can contact us by phone at [Phone Number] or by email at [Email Address].";
+        }
+        if (/hours/.test(lowerCaseMessage)) {
+            return "Our customer support hours are [Hours of Operation].";
+        }
+        if (/help/.test(lowerCaseMessage)) {
+            return "How can I assist you today? Please be more specific with your request.";
+        }
+
+        // General Responses
+        if (/thank you|sorry/.test(lowerCaseMessage)) {
+            return ["You're welcome!", "No problem, how can I help?"][Math.floor(Math.random())];
+        }
+
+        // Default
+        return "I'm still learning. Please rephrase your question or provide more details.";
+        }
+
+        function getGreetingResponse() {
+        return ["Hello!", "Hi there!", "Welcome!", "Good to see you."][Math.floor(Math.random() * 4)];
+        }
+
+        function getFarewellResponse() {
+        return ["Goodbye!", "See you later!", "Have a nice day!", "Take care."][Math.floor(Math.random() * 4)];
+        }
+        sendButton.addEventListener('click', () => {
+            const userMessage = userInput.value;
+            if (userMessage.trim() !== '') { 
+                const userChatMessage = new ChatMessage('user', userMessage);
+                displayMessage(userChatMessage);
+                setTimeout(() => { 
+                    const botChatMessage = new ChatMessage('bot', getBotResponse(userMessage));
+                    displayMessage(botChatMessage);
+                }, 500);
+                userInput.value = '';
+            }
+        });
+
+        userInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage(); 
+            }
+        });
+    </script>
+
+</body>
+</html>
